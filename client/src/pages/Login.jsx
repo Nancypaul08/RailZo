@@ -37,7 +37,9 @@ export default function Login() {
       }
       navigate('/');
     } catch (err) {
-      setError(err?.response?.data?.error || err.message || 'Something went wrong');
+      const responseError = err?.response?.data?.error;
+      const message = typeof responseError === 'string' ? responseError : err?.message;
+      setError(message || 'The server could not complete this request. Please try again.');
     } finally {
       setBusy(false);
     }

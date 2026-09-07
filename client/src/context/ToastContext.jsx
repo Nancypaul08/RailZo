@@ -7,7 +7,8 @@ export function ToastProvider({ children }) {
 
   const toast = useCallback((msg, type) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts(t => [...t, { id, msg, type }]);
+    const safeMessage = typeof msg === 'string' ? msg : msg?.message || msg?.error || 'Something went wrong';
+    setToasts(t => [...t, { id, msg: safeMessage, type }]);
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3200);
   }, []);
 
