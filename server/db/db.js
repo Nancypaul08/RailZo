@@ -1,4 +1,6 @@
 const Database = require('better-sqlite3');
+const bcrypt = require('bcryptjs');
+const { randomUUID } = require('crypto');
 const path = require('path');
 
 const databasePath = process.env.DB_PATH || (process.env.VERCEL ? '/tmp/railzo.db' : path.join(__dirname, '..', 'trackline.db'));
@@ -117,5 +119,15 @@ const addColumn = (table, column, definition) => {
   .forEach(definition => addColumn('incidents', definition.split(' ')[0], definition.slice(definition.indexOf(' ') + 1)));
 ['risk_score INTEGER DEFAULT 0', 'risk_level TEXT DEFAULT \'Low\'', 'risk_factors TEXT DEFAULT \'[]\'', 'risk_explanation TEXT DEFAULT \'\'', 'ai_recommendation TEXT DEFAULT \'\'', 'approval_status TEXT DEFAULT \'Not required\'']
   .forEach(definition => addColumn('missing_persons', definition.split(' ')[0], definition.slice(definition.indexOf(' ') + 1)));
+
+if (process.env.VERCEL) {
+  const demoBadge = process.env.DEMO_ADMIN_BADGE || 'RPF-0001';
+  const demoPassword = process.env.DEMO_ADMIN_PASSWORD || 'demo1234';
+  const demoExists = db.prepare('SELECT id FROM users WHERE badge = ?').get(demoBadge);
+  if (!demoExists) {
+    db.prepare('INSERT INTO users (id, name, badge, station, photo, role, password_hash, created_at) VALUES (?,?,?,?,?,?,?,?)')
+      .run(randomUUID(), 'Demo Admin', demoBadge, 'Patna Jn.', '', 'Admin', bcrypt.hashSync(demoPassword, 10), new Date().toISOString());
+  }
+}
 
 module.exports = db;
